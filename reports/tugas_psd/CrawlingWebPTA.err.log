@@ -1,0 +1,119 @@
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/usr/local/lib/python3.8/dist-packages/nbclient/client.py", line 1204, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+  File "/usr/local/lib/python3.8/dist-packages/nbclient/util.py", line 84, in wrapped
+    return just_run(coro(*args, **kwargs))
+  File "/usr/local/lib/python3.8/dist-packages/nbclient/util.py", line 62, in just_run
+    return loop.run_until_complete(coro)
+  File "/usr/lib/python3.8/asyncio/base_events.py", line 616, in run_until_complete
+    return future.result()
+  File "/usr/local/lib/python3.8/dist-packages/nbclient/client.py", line 663, in async_execute
+    await self.async_execute_cell(
+  File "/usr/local/lib/python3.8/dist-packages/nbclient/client.py", line 965, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/usr/local/lib/python3.8/dist-packages/nbclient/client.py", line 862, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+#Inisialisasi Link URL
+url = 'https://pta.trunojoyo.ac.id/c_search/byprod/10/'
+
+headers={
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
+    }
+
+#Inisialisai list untuk menginputkan hasil crawling kedalam sebuah list
+listJudul = []
+listPenulis = []
+listAbstrak = []
+
+#proses perulangan untuk crawling data
+for page in range(1,172):
+  req = requests.get(url+str(page), headers=headers)
+  soup = BeautifulSoup(req.text, 'html.parser')
+  items = soup.findAll('li',{'data-id':'id-1'})
+  for it in items:
+    try: link = it.find('a', 'white button')['href']
+    except : link=''
+    try: title = it.find('a', 'title').text 
+    except : title=''
+    try: penulis = it.find('span').text.replace('Penulis :','') 
+    except : penulis=''
+
+    if it != '':
+      listJudul.append(title)
+      listPenulis.append(penulis)
+      req2 = requests.get(str(link), headers=headers)
+      soup2 = BeautifulSoup(req2.text, 'html.parser')
+      items2 = soup2.findAll('li',{'data-id':'id-1'})
+      for it2 in items2:
+        try : abstrak = it2.find('p',{'align':'justify'}).text
+        except : abstrak=''
+
+        if it2 != '':
+          listAbstrak.append(abstrak)
+  
+judul = pd.DataFrame(listJudul,columns=["Judul"])
+penulis = pd.DataFrame(listPenulis,columns=["Penulis"])
+abstrak = pd.DataFrame(listAbstrak,columns=["Abstrak"])
+data = pd.concat([penulis,judul, abstrak], axis=1) 
+data
+
+------------------
+
+[0;31m[0m
+[0;31mMissingSchema[0mTraceback (most recent call last)
+[0;32m<ipython-input-3-3094fabda744>[0m in [0;36m<module>[0;34m[0m
+[1;32m     27[0m       [0mlistJudul[0m[0;34m.[0m[0mappend[0m[0;34m([0m[0mtitle[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[1;32m     28[0m       [0mlistPenulis[0m[0;34m.[0m[0mappend[0m[0;34m([0m[0mpenulis[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0;32m---> 29[0;31m       [0mreq2[0m [0;34m=[0m [0mrequests[0m[0;34m.[0m[0mget[0m[0;34m([0m[0mstr[0m[0;34m([0m[0mlink[0m[0;34m)[0m[0;34m,[0m [0mheaders[0m[0;34m=[0m[0mheaders[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m     30[0m       [0msoup2[0m [0;34m=[0m [0mBeautifulSoup[0m[0;34m([0m[0mreq2[0m[0;34m.[0m[0mtext[0m[0;34m,[0m [0;34m'html.parser'[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[1;32m     31[0m       [0mitems2[0m [0;34m=[0m [0msoup2[0m[0;34m.[0m[0mfindAll[0m[0;34m([0m[0;34m'li'[0m[0;34m,[0m[0;34m{[0m[0;34m'data-id'[0m[0;34m:[0m[0;34m'id-1'[0m[0;34m}[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+
+[0;32m/usr/local/lib/python3.8/dist-packages/requests/api.py[0m in [0;36mget[0;34m(url, params, **kwargs)[0m
+[1;32m     74[0m [0;34m[0m[0m
+[1;32m     75[0m     [0mkwargs[0m[0;34m.[0m[0msetdefault[0m[0;34m([0m[0;34m'allow_redirects'[0m[0;34m,[0m [0;32mTrue[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0;32m---> 76[0;31m     [0;32mreturn[0m [0mrequest[0m[0;34m([0m[0;34m'get'[0m[0;34m,[0m [0murl[0m[0;34m,[0m [0mparams[0m[0;34m=[0m[0mparams[0m[0;34m,[0m [0;34m**[0m[0mkwargs[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m     77[0m [0;34m[0m[0m
+[1;32m     78[0m [0;34m[0m[0m
+
+[0;32m/usr/local/lib/python3.8/dist-packages/requests/api.py[0m in [0;36mrequest[0;34m(method, url, **kwargs)[0m
+[1;32m     59[0m     [0;31m# cases, and look like a memory leak in others.[0m[0;34m[0m[0;34m[0m[0;34m[0m[0m
+[1;32m     60[0m     [0;32mwith[0m [0msessions[0m[0;34m.[0m[0mSession[0m[0;34m([0m[0;34m)[0m [0;32mas[0m [0msession[0m[0;34m:[0m[0;34m[0m[0;34m[0m[0m
+[0;32m---> 61[0;31m         [0;32mreturn[0m [0msession[0m[0;34m.[0m[0mrequest[0m[0;34m([0m[0mmethod[0m[0;34m=[0m[0mmethod[0m[0;34m,[0m [0murl[0m[0;34m=[0m[0murl[0m[0;34m,[0m [0;34m**[0m[0mkwargs[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m     62[0m [0;34m[0m[0m
+[1;32m     63[0m [0;34m[0m[0m
+
+[0;32m/usr/local/lib/python3.8/dist-packages/requests/sessions.py[0m in [0;36mrequest[0;34m(self, method, url, params, data, headers, cookies, files, auth, timeout, allow_redirects, proxies, hooks, stream, verify, cert, json)[0m
+[1;32m    526[0m             [0mhooks[0m[0;34m=[0m[0mhooks[0m[0;34m,[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    527[0m         )
+[0;32m--> 528[0;31m         [0mprep[0m [0;34m=[0m [0mself[0m[0;34m.[0m[0mprepare_request[0m[0;34m([0m[0mreq[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m    529[0m [0;34m[0m[0m
+[1;32m    530[0m         [0mproxies[0m [0;34m=[0m [0mproxies[0m [0;32mor[0m [0;34m{[0m[0;34m}[0m[0;34m[0m[0;34m[0m[0m
+
+[0;32m/usr/local/lib/python3.8/dist-packages/requests/sessions.py[0m in [0;36mprepare_request[0;34m(self, request)[0m
+[1;32m    454[0m [0;34m[0m[0m
+[1;32m    455[0m         [0mp[0m [0;34m=[0m [0mPreparedRequest[0m[0;34m([0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0;32m--> 456[0;31m         p.prepare(
+[0m[1;32m    457[0m             [0mmethod[0m[0;34m=[0m[0mrequest[0m[0;34m.[0m[0mmethod[0m[0;34m.[0m[0mupper[0m[0;34m([0m[0;34m)[0m[0;34m,[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    458[0m             [0murl[0m[0;34m=[0m[0mrequest[0m[0;34m.[0m[0murl[0m[0;34m,[0m[0;34m[0m[0;34m[0m[0m
+
+[0;32m/usr/local/lib/python3.8/dist-packages/requests/models.py[0m in [0;36mprepare[0;34m(self, method, url, headers, files, data, params, auth, cookies, hooks, json)[0m
+[1;32m    314[0m [0;34m[0m[0m
+[1;32m    315[0m         [0mself[0m[0;34m.[0m[0mprepare_method[0m[0;34m([0m[0mmethod[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0;32m--> 316[0;31m         [0mself[0m[0;34m.[0m[0mprepare_url[0m[0;34m([0m[0murl[0m[0;34m,[0m [0mparams[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m    317[0m         [0mself[0m[0;34m.[0m[0mprepare_headers[0m[0;34m([0m[0mheaders[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    318[0m         [0mself[0m[0;34m.[0m[0mprepare_cookies[0m[0;34m([0m[0mcookies[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+
+[0;32m/usr/local/lib/python3.8/dist-packages/requests/models.py[0m in [0;36mprepare_url[0;34m(self, url, params)[0m
+[1;32m    388[0m             [0merror[0m [0;34m=[0m [0merror[0m[0;34m.[0m[0mformat[0m[0;34m([0m[0mto_native_string[0m[0;34m([0m[0murl[0m[0;34m,[0m [0;34m'utf8'[0m[0;34m)[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[1;32m    389[0m [0;34m[0m[0m
+[0;32m--> 390[0;31m             [0;32mraise[0m [0mMissingSchema[0m[0;34m([0m[0merror[0m[0;34m)[0m[0;34m[0m[0;34m[0m[0m
+[0m[1;32m    391[0m [0;34m[0m[0m
+[1;32m    392[0m         [0;32mif[0m [0;32mnot[0m [0mhost[0m[0;34m:[0m[0;34m[0m[0;34m[0m[0m
+
+[0;31mMissingSchema[0m: Invalid URL '': No schema supplied. Perhaps you meant http://?
+MissingSchema: Invalid URL '': No schema supplied. Perhaps you meant http://?
+
